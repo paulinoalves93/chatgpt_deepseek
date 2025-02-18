@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat com ChatGPT e DeepSeek</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .bot-message {
+            background-color: #ebebeb;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        input, button, select {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2>Chat com ChatGPT e DeepSeek</h2>
+        <div class="messages" id="messages"></div>
+        <input type="text" id="userInput" placeholder="Digite sua mensagem...">
+        <select id="aiModel">
+            <option value="chatgpt">ChatGPT</option>
+            <option value="deepseek">DeepSeek</option>
+        </select>
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById("messages");
+
+        async function sendMessage() {
+            const userInput = document.getElementById("userInput").value;
+            const aiModel = document.getElementById("aiModel").value;
+
+            if (!userInput) return alert("Digite uma mensagem!");
+
+            // Adiciona a mensagem do usuário ao chat
+            messagesContainer.innerHTML += `<div class="user-message"><strong>Você:</strong> ${userInput}</div>`;
+            document.getElementById("userInput").value = "";
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            let apiKey, apiUrl, requestData;
+
+            if (aiModel === "chatgpt") {
+                apiKey = "YOUR_OPENAI_API_KEY";  // Substitua pela sua chave da OpenAI
+                apiUrl = "https://api.openai.com/v1/chat/completions";
+                requestData = {
+                    model: "gpt-3.5-turbo",
+                    messages: [{ role: "user", content: userInput }],
+                    temperature: 0.7
+                };
+            } else {
+                apiKey = "YOUR_DEEPSEEK_API_KEY";  // Substitua pela sua chave do DeepSeek
+                apiUrl = "https://api.deepseek.com/v1/chat/completions";
+                requestData = {
+                    model: "deepseek-chat",
+                    messages: [{ role: "user", content: userInput }],
+                    temperature: 0.7
+                };
+            }
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+                const botReply = data.choices[0].message.content;
+
+                messagesContainer.innerHTML += `<div class="bot-message"><strong>${aiModel === "chatgpt" ? "ChatGPT" : "DeepSeek"}:</strong> ${botReply}</div>`;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            } catch (error) {
+                messagesContainer.innerHTML += `<div class="bot-message"><strong>Erro:</strong> Não foi possível obter resposta.</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
